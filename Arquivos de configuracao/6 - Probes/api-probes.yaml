@@ -1,0 +1,51 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: api-probes-lab
+spec:
+  replicas: 1 # Vamos usar apenas 1 réplica para facilitar a visualização
+  selector:
+    matchLabels:
+      app: api-teste
+  template:
+    metadata:
+      labels:
+        app: api-teste
+    spec:
+      containers:
+      - name: api
+        image: nginx
+        # Esse truque cria os arquivos antes de iniciar o Nginx
+        command: ["/bin/sh", "-c"]
+        args: ["touch /usr/share/nginx/html/ready.html && touch /usr/share/nginx/html/health.html && nginx -g 'daemon off;'"]
+        ports:
+        - containerPort: 80
+
+        # 1. STARTUP PROBE (O Escudo de Boot)
+        # Só serve para proteger a inicialização. Enquanto ela não passar, as outras nem ligam.
+        # Excelente para aplicações pesadas (como Java/Spring) que demoram para ligar.
+        startupProbe:
+          httpGet:
+            path: /
+            port: 80
+          failureThreshold: 10     # Tenta 10 vezes...
+          periodSeconds: 2         # ...a cada 2 segundos (máximo de 20s de espera)
+
+        # 2. READINESS PROBE (O Semáforo de Tráfego)
+        # Se falhar, o Kubernetes NÃO reinicia o Pod, apenas tira ele do "Service" 
+        # para que nenhum cliente/usuário seja mandado para este Pod quebrado.
+        readinessProbe:
+          httpGet:
+            path: /ready.html
+            port: 80
+          initialDelaySeconds: 5   # Espera 5s após o startup para começar a checar
+          periodSeconds: 3         # Checa a cada 3 segundos
+
+        # 3. LIVENESS PROBE (O Desfibrilador)
+        # Se falhar, significa que o app travou (deadlock). O Kubernetes vai MATAR e REINICIAR o Pod.
+        livenessProbe:
+          httpGet:
+            path: /health.html
+            port: 80
+          initialDelaySeconds: 5
+          periodSeconds: 5

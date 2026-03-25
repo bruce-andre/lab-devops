@@ -1,0 +1,24 @@
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: hpa-api-producao
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: api-producao      # O alvo exato que ele vai vigiar
+  minReplicas: 3            # Em produção, o mínimo deve garantir Alta Disponibilidade
+  maxReplicas: 9           # Até onde seu orçamento/banco de dados aguenta
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 50  # Escala quando a CPU bater 50%
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: 50  # E TAMBÉM escala se a RAM bater 50%

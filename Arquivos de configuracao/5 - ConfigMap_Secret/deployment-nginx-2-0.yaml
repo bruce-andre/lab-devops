@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: nginx
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      containers:
+      - name: nginx
+        image: nginx
+        ports:
+        - containerPort: 80
+        env:                     # <-- Início da injeção de variáveis
+        - name: APP_ENV
+          valueFrom:
+            configMapKeyRef:
+              name: app-config   # Nome do ConfigMap
+              key: APP_ENV       # Chave dentro do ConfigMap
+        - name: DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: app-secret   # Nome do Secret
+              key: DB_PASSWORD   # Chave dentro do Secret
+        resources:               
+          requests:
+            memory: "64Mi"
+            cpu: "250m"
+          limits:
+            memory: "128Mi"
+            cpu: "500m"
