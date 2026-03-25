@@ -3,7 +3,7 @@ kind: Deployment
 metadata:
   name: api-producao
 spec:
-  # ATENÇÃO: A linha "replicas" foi deletada de propósito!
+  # ATENÇÃO: A linha "replicas" foi deletada de propósito
   selector:
     matchLabels:
       app: api
