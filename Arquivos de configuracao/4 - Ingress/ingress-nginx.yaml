@@ -12,10 +12,8 @@ spec:
     helm:
       values: |
         controller:
-          # Define o NGINX como o roteador padrão do seu cluster
           ingressClassResource:
             default: true
-          # Como estamos em um lab local usando port-forward, não precisamos de um LoadBalancer pago de nuvem
           service:
             type: ClusterIP
   destination:
@@ -27,3 +25,9 @@ spec:
       selfHeal: true
     syncOptions:
     - CreateNamespace=true
+  ignoreDifferences:
+    - group: admissionregistration.k8s.io
+      kind: ValidatingWebhookConfiguration
+      name: porteiro-ingress-nginx-controller-admission
+      jqPathExpressions:
+        - '.webhooks[].clientConfig.caBundle'
