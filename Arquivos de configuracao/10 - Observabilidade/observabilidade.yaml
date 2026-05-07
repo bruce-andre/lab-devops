@@ -8,7 +8,7 @@ spec:
   source:
     repoURL: https://grafana.github.io/helm-charts
     chart: loki-stack
-    targetRevision: 2.10.2 
+    targetRevision: 2.10.2
     helm:
       values: |
         grafana:
@@ -17,6 +17,24 @@ spec:
             tag: latest
         promtail:
           enabled: true
+          config:
+            snippets:
+              extraScrapeConfigs: |
+                - job_name: system_logs
+                  static_configs:
+                  - targets:
+                      - localhost
+                    labels:
+                      job: varlogs
+                      __path__: /var/log/*log
+          extraVolumes:
+            - name: host-logs
+              hostPath:
+                path: /var/log
+          extraVolumeMounts:
+            - name: host-logs
+              mountPath: /var/log
+              readOnly: true
   destination:
     server: https://kubernetes.default.svc
     namespace: grafana
