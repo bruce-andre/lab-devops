@@ -22,8 +22,7 @@ spec:
         promtail:
           enabled: true
           config:
-            clients:
-              - url: http://grafana-loki.grafana.svc.cluster.local:3100/loki/api/v1/push
+            lokiAddress: http://grafana-loki:3100/loki/api/v1/push
             snippets:
               extraScrapeConfigs: |
                 - job_name: system_logs
